@@ -18,77 +18,94 @@ public class Database {
 			System.err.println(e);
 			System.err.println("Cannot connect to database server");
 		}
-		finally {
-			if (conn != null) {
-				try {
-					conn.close ();
-					System.out.println("Database connection terminated");
-				}
-				catch (Exception e) {
-					/* ignore close errors */
-				}
-			}
-		}
 	}
 	
-	public void createDatabaseTable () {
+	public void createDatabaseTable() {
 		// create new table
+		
+		Statement s = null;
 		try { 
-			Statement s = conn.createStatement();
+			s = conn.createStatement();
 			int count;
 			s.executeUpdate ("DROP TABLE IF EXISTS candidates_table");
 			s.executeUpdate (
 					"CREATE TABLE candidates_table ("
 					+ "id INT UNSIGNED NOT NULL AUTO_INCREMENT,"
 					+ "PRIMARY KEY (id),"
-					+ "firstname CHAR(100) NOT NULL, surname CHAR(100) NOT NULL)");
+					+ "username CHAR(20) NOT NULL, password CHAR(20) NOT NULL)");
 			count = s.executeUpdate (
-					"INSERT INTO candidates_table (firstname, surname)"
+					"INSERT INTO candidates_table (username, password)"
 					+ " VALUES"
-					+ "('Frederick', 'Nicholson'),"
-					+ "('Dexter', 'Stone'),"
-					+ "('Sam', 'Davidson'),"
-					+ "('Rory', 'Chambers')");
+					+ "('Frederick', '=qXuSzq7n>n:T7nR'),"
+					+ "('Dexter', 'ryqDY6MrdtWhM{x'),"
+					+ "('Sam', 'A?Js[F/.3xk7]W/6'),"
+					+ "('Rory', '=M2AL-4t%h[=j*ky')");
 			System.out.println (count + " rows were inserted");
 		}
 		catch (SQLException e) {
 			System.err.println ("Error message: " + e.getMessage ());
 			System.err.println ("Error number: " + e.getErrorCode ());
 		}
+		finally {
+			try { if (s != null) s.close(); } catch (Exception e) {};
+			try {
+				if (conn != null) {
+					conn.close();
+					System.out.println("Database connection terminated");
+				}
+			} catch (Exception e) {};
+		}
 	}
 	
-	public boolean isUsernameRegistered() {
+	public boolean isUsernameRegistered(String usr, String pass) {
+		
 		boolean flag = false;
+		Statement s = null;
+		ResultSet rs = null;
 		
 		try {
-			Statement s = conn.createStatement();
+			s = conn.createStatement();
 			
 			// check if record exist
-			s.executeQuery("SELECT * FROM candidates_table WHERE firstname = 'Sam'");
-			ResultSet rs = s.getResultSet();
+			s.executeQuery(
+					"SELECT * "
+					+ "FROM candidates_table "
+					+ "WHERE username = '"+usr+"' AND password = '"+pass+"'");
+			rs = s.getResultSet();
 			if (rs.next()) {
 				System.out.println("Success!");
-				int idVal = rs.getInt ("id");
-				String nameVal = rs.getString ("firstname");
-				String catVal = rs.getString ("surname");
-				System.out.println ("id = " + idVal + ", FirstName = " + nameVal + ", Surname = " + catVal);
+				int idVal = rs.getInt("id");
+				String nameVal = rs.getString("username");
+				String catVal = rs.getString ("password");
+				System.out.println ("id = " + idVal + ", Username = " + nameVal + ", Password = " + catVal);
 				flag = true;
 			}
 			else {
 				System.out.println("Failure...");
 			}
-			rs.close();
-			s.close();
 		}
 		catch (SQLException e) {
 			System.err.println ("Error message: " + e.getMessage ());
 			System.err.println ("Error number: " + e.getErrorCode ());
 		}
+		finally {
+			try { if (rs != null) rs.close();} catch (Exception e) {};
+			try { if (s != null) s.close(); } catch (Exception e) {};
+			try {
+				if (conn != null) {
+					conn.close();
+					System.out.println("Database connection terminated");
+				}
+			} catch (Exception e) {};
+		}
 		return flag;
 	}
 
 	public static void main (String[] args) {
-		Database db = new Database();
-		db.establishConnection();
+		//Database db = new Database();
+		//db.establishConnection();
+		//db.createDatabaseTable();
+		//db.establishConnection();
+		//db.isUsernameRegistered("Frederick", "=qXuSzq7n>n:T7nR");
 	}
 }
